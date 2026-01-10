@@ -257,6 +257,11 @@ def build_dashboard_data():
     # Safety Check: Create empty dashboard if data is missing
     main_data_path = os.path.join(DATA_DIR, MAIN_DATA_FILE)
     if not os.path.exists(main_data_path):
+        # If CSV is missing but JSON exists (from GitHub), use the JSON
+        if os.path.exists(JSON_OUTPUT_PATH):
+            print(f"CSV missing, but found {JSON_OUTPUT_PATH}. Using pre-computed data.")
+            return
+
         print(f"WARNING: Data file {MAIN_DATA_FILE} not found.")
         print("Generating placeholder data. Please upload the dataset via the Admin interface.")
         
