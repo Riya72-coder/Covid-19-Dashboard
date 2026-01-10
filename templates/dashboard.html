@@ -93,13 +93,17 @@
             <div class="col-lg-8">
                 <div class="chart-card">
                     <h5 class="card-title"><i class="fa-solid fa-chart-line"></i> Trends Over Time</h5>
-                    <canvas id="trendsOverTimeChart"></canvas>
+                    <div style="position: relative; height: 400px; width: 100%;">
+                        <canvas id="trendsOverTimeChart"></canvas>
+                    </div>
                 </div>
             </div>
             <div class="col-lg-4">
                  <div class="chart-card">
                     <h5 class="card-title"><i class="fa-solid fa-chart-bar"></i> Top 10 States by Cases</h5>
-                    <canvas id="topStatesBarChart"></canvas>
+                    <div style="position: relative; height: 400px; width: 100%;">
+                        <canvas id="topStatesBarChart"></canvas>
+                    </div>
                 </div>
             </div>
         </div>
@@ -108,13 +112,17 @@
             <div class="col-lg-4">
                 <div class="chart-card">
                     <h5 class="card-title"><i class="fa-solid fa-pie-chart"></i> Case Proportions (Top 5 States)</h5>
-                    <canvas id="topStatesPieChart"></canvas>
+                    <div style="position: relative; height: 300px; width: 100%;">
+                        <canvas id="topStatesPieChart"></canvas>
+                    </div>
                 </div>
             </div>
             <div class="col-lg-4">
                 <div class="chart-card">
                     <h5 class="card-title"><i class="fa-solid fa-comments"></i> Sentiment Distribution</h5>
-                     <canvas id="sentimentDistributionChart"></canvas>
+                     <div style="position: relative; height: 300px; width: 100%;">
+                        <canvas id="sentimentDistributionChart"></canvas>
+                     </div>
                 </div>
             </div>
             <div class="col-lg-4">
@@ -146,9 +154,9 @@
 
         <!-- Footer -->
         <footer class="text-center mt-4 mb-4">
-            <p class="text-muted">Data Source: Ministry of Health and Family Welfare, Government of India.
+            <p class="text-muted">&copy; 2024 Covid-19 Dashboard. All rights reserved.
                 <br>
-                &copy; 2024 Covid-19 Dashboard. All rights reserved.
+                Data Source: Ministry of Health and Family Welfare, Government of India.
                 <br><a href="{{ url_for('update_data') }}" class="small text-decoration-none text-muted">Admin: Update Data</a>
             </p>
         </footer>
