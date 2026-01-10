@@ -1,12 +1,12 @@
 import pandas as pd
 import numpy as np
 import matplotlib
-matplotlib.use('Agg') # Essential: Use non-interactive backend for server deployment
+matplotlib.use('Agg') # Use non-interactive backend
 import matplotlib.pyplot as plt
 import seaborn as sns
 from statsmodels.tsa.arima.model import ARIMA
 from sklearn.metrics import mean_squared_error
-from prophet import Prophet
+# from prophet import Prophet
 import os
 import json
 from datetime import datetime
@@ -17,13 +17,13 @@ DATA_DIR = os.path.join(BASE_DIR, "data")
 OUTPUT_DIR = os.path.join(BASE_DIR, "static", "images") # Save images to static folder for Flask
 JSON_OUTPUT_PATH = os.path.join(BASE_DIR, 'dashboard_data.json')
 
-# --- Dataset Configuration (Change these names if you add new files) ---
+# --- Dataset Configuration ---
 VACCINATION_FILE = "IndiaCovidVaccination2023.csv"
 SENTIMENT_FILE = "COVID-19_Sentiments.csv"
 MAIN_DATA_FILE = "output.csv"
 
-# Create output directory if it doesn't exist
 os.makedirs(OUTPUT_DIR, exist_ok=True)
+os.makedirs(DATA_DIR, exist_ok=True)
 
 # --- Data Loading ---
 def get_vaccination_df():
@@ -66,24 +66,21 @@ def get_kpis(df, vaccination_df, sentiment_df):
         elif score < 0: return 'Negative'
         else: return 'Neutral'
 
-    # Handle potential column name mismatches for sentiment
+    # Handle potential column name mismatches
     sentiment_col = 'sentiments/public opinion'
     if sentiment_col not in sentiment_df.columns:
-        # Try to find a similar column
         possible_cols = [c for c in sentiment_df.columns if 'sentiment' in c.lower() or 'opinion' in c.lower()]
         if possible_cols:
             sentiment_col = possible_cols[0]
         else:
             print(f"Warning: Sentiment column not found. Available: {sentiment_df.columns.tolist()}")
-            sentiment_df[sentiment_col] = 0 # Default to 0 (Neutral) if missing
+            sentiment_df[sentiment_col] = 0 
 
     sentiment_df['sentiment_category'] = sentiment_df[sentiment_col].apply(categorize_sentiment)
     overall_sentiment = sentiment_df['sentiment_category'].mode()[0]
 
-    # Handle potential column name mismatches for vaccination doses
     doses_col = 'total_doses'
     if doses_col not in vaccination_df.columns:
-        # Try to find a similar column containing 'total' and 'dose'
         possible_cols = [c for c in vaccination_df.columns if 'total' in c.lower() and 'dose' in c.lower()]
         if possible_cols:
             doses_col = possible_cols[0]
@@ -91,7 +88,7 @@ def get_kpis(df, vaccination_df, sentiment_df):
             print(f"Warning: 'total_doses' column not found. Available: {vaccination_df.columns.tolist()}")
             vaccination_df[doses_col] = 0 # Default to 0 if missing
 
-    # Ensure the column is numeric (remove commas if present)
+    # Ensure numeric
     if vaccination_df[doses_col].dtype == 'object':
         vaccination_df[doses_col] = pd.to_numeric(vaccination_df[doses_col].astype(str).str.replace(',', ''), errors='coerce').fillna(0)
 
@@ -110,7 +107,6 @@ def get_trends_over_time_data(df):
     """Generates data for 'Trends over Time' chart."""
     data_grouped_date = df.groupby('date')[['total_cases', 'discharged', 'deaths']].sum().reset_index()
     
-    # Generate plot
     plt.figure(figsize=(12, 6))
     plt.plot(data_grouped_date['date'], data_grouped_date['total_cases'], label='Total Cases')
     plt.plot(data_grouped_date['date'], data_grouped_date['discharged'], label='Recoveries')
@@ -121,7 +117,6 @@ def get_trends_over_time_data(df):
     plt.savefig(os.path.join(OUTPUT_DIR, 'trends_over_time.png'))
     plt.close()
     
-    # Return data for Chart.js
     return {
         'labels': data_grouped_date['date'].dt.strftime('%Y-%m-%d').tolist(),
         'datasets': [
@@ -168,7 +163,6 @@ def get_top_states_data(df):
 
 def get_correlation_data(df):
     """Generates correlation heatmap."""
-    # Only use columns that exist in the dataframe to prevent KeyError
     possible_cols = ['total_doses', 'dose1', 'dose_2', 'total_cases', 'discharged', 'deaths', 'population', 'discharge_ratio', 'death_ratio']
     numeric_cols = [c for c in possible_cols if c in df.columns]
     correlation_matrix = df[numeric_cols].corr()
@@ -180,7 +174,6 @@ def get_correlation_data(df):
     plt.savefig(os.path.join(OUTPUT_DIR, 'correlation_heatmap.png'))
     plt.close()
     
-    # Heatmap data is more complex for Chart.js, returning image path for now
     return 'images/correlation_heatmap.png'
 
 def perform_forecasting(df):
@@ -190,7 +183,7 @@ def perform_forecasting(df):
     cases_ts = df.groupby('date')['total_cases'].sum()
 
     # ARIMA Model
-    print("  > Fitting ARIMA model (this may take a few minutes)...")
+    print("  > Fitting ARIMA model...")
     train = cases_ts[:int(0.8 * len(cases_ts))]
     test = cases_ts[int(0.8 * len(cases_ts)):]
     model = ARIMA(train, order=(5, 1, 0))
@@ -208,19 +201,19 @@ def perform_forecasting(df):
     plt.close()
 
     # Prophet Model
-    print("  > Fitting Prophet model...")
-    prophet_data = cases_ts.reset_index().rename(columns={'date': 'ds', 'total_cases': 'y'})
-    prophet_model = Prophet()
-    prophet_model.fit(prophet_data)
-    future = prophet_model.make_future_dataframe(periods=30)
-    forecast = prophet_model.predict(future)
-    
-    prophet_model.plot(forecast)
-    plt.title("Prophet: Forecast of COVID-19 Cases")
-    plt.xlabel("Date"); plt.ylabel("Total Cases")
-    plt.savefig(os.path.join(OUTPUT_DIR, 'prophet_forecast.png'))
-    plt.close()
-    print("Forecast plots saved to static/images/ directory.")
+    # print("  > Fitting Prophet model...")
+    # prophet_data = cases_ts.reset_index().rename(columns={'date': 'ds', 'total_cases': 'y'})
+    # prophet_model = Prophet()
+    # prophet_model.fit(prophet_data)
+    # future = prophet_model.make_future_dataframe(periods=30)
+    # forecast = prophet_model.predict(future)
+    # 
+    # prophet_model.plot(forecast)
+    # plt.title("Prophet: Forecast of COVID-19 Cases")
+    # plt.xlabel("Date"); plt.ylabel("Total Cases")
+    # plt.savefig(os.path.join(OUTPUT_DIR, 'prophet_forecast.png'))
+    # plt.close()
+    print("Forecast plots saved.")
     return 'images/arima_forecast.png', 'images/prophet_forecast.png'
 
 def get_sentiment_distribution_data(df):
@@ -230,7 +223,6 @@ def get_sentiment_distribution_data(df):
         elif score < 0: return 'Negative'
         else: return 'Neutral'
 
-    # Handle potential column name mismatches for sentiment
     sentiment_col = 'sentiments/public opinion'
     if sentiment_col not in df.columns:
         possible_cols = [c for c in df.columns if 'sentiment' in c.lower() or 'opinion' in c.lower()]
@@ -262,7 +254,7 @@ def get_sentiment_distribution_data(df):
 def build_dashboard_data():
     print("Starting data build process...")
     
-    # --- Safety Check: If data is missing (e.g. fresh GitHub deploy), create empty dashboard ---
+    # Safety Check: Create empty dashboard if data is missing
     main_data_path = os.path.join(DATA_DIR, MAIN_DATA_FILE)
     if not os.path.exists(main_data_path):
         print(f"WARNING: Data file {MAIN_DATA_FILE} not found.")
@@ -288,14 +280,12 @@ def build_dashboard_data():
         with open(JSON_OUTPUT_PATH, 'w') as f:
             json.dump(placeholder_data, f, indent=4)
         return
-    # -------------------------------------------------------------------------------------------
 
     main_df = get_main_df()
     vaccination_df = get_vaccination_df()
     sentiment_df = get_sentiment_df()
     print("Data loaded successfully.")
     
-    # Generate all data and plots
     kpis = get_kpis(main_df.copy(), vaccination_df.copy(), sentiment_df.copy())
     print("KPIs generated.")
     trends_data = get_trends_over_time_data(main_df.copy())
@@ -309,7 +299,6 @@ def build_dashboard_data():
     sentiment_dist_data = get_sentiment_distribution_data(sentiment_df.copy())
     print("Sentiment distribution data generated.")
     
-    # --- Assemble final JSON object ---
     dashboard_data = {
         'kpi': kpis,
         'charts': {
@@ -325,14 +314,10 @@ def build_dashboard_data():
         }
     }
     
-    # Write to JSON file
     with open(JSON_OUTPUT_PATH, 'w') as f:
         json.dump(dashboard_data, f, indent=4)
         
     print(f"\nSuccessfully built data and saved to {JSON_OUTPUT_PATH}")
 
-    print("Analysis complete. All plots saved in static/images/.")
-
-# Allow running this script directly from terminal
 if __name__ == "__main__":
     build_dashboard_data()

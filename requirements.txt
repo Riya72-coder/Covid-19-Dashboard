@@ -5,6 +5,5 @@ matplotlib
 seaborn
 statsmodels
 scikit-learn
-prophet
 joblib
 gunicorn
