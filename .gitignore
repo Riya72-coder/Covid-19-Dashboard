@@ -1,0 +1,11 @@
+# Python cache
+__pycache__/
+*.pyc
+
+# Virtual Environment
+venv/
+env/
+
+# Ignore large datasets
+data/output.csv
+data/COVID-19_Sentiments.csv

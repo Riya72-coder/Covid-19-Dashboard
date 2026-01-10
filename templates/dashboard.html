@@ -1,0 +1,224 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Enhanced COVID-19 Dashboard</title>
+    <!-- Bootstrap CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+    <!-- Font Awesome for icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- Custom CSS for styling -->
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+<body>
+    <!-- Navigation Bar -->
+    <nav class="navbar navbar-expand-lg navbar-dark bg-dark">
+        <div class="container-fluid">
+            <a class="navbar-brand" href="{{ url_for('dashboard') }}"><i class="fa-solid fa-virus-covid me-2"></i>Covid-19 Dashboard</a>
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            <div class="collapse navbar-collapse" id="navbarNav">
+                <ul class="navbar-nav ms-auto">
+                    <li class="nav-item"><a class="nav-link active" href="{{ url_for('dashboard') }}">Dashboard</a></li>
+                    <li class="nav-item"><a class="nav-link" href="{{ url_for('info') }}">Info Center</a></li>
+                </ul>
+            </div>
+        </div>
+    </nav>
+
+    <div class="container-fluid mt-4">
+        <header class="main-header">
+            <h1><i class="fa-solid fa-chart-pie"></i> COVID-19 India Analysis Dashboard</h1>
+            <p class="mb-0">Last Updated: {{ data.kpi.last_updated }}</p>
+        </header>
+
+        <!-- KPI Cards Section -->
+        <div class="row g-3">
+            <div class="col-xl-2 col-lg-4 col-md-4 col-sm-6">
+                <div class="kpi-card">
+                    <div class="kpi-icon text-primary"><i class="fa-solid fa-virus"></i></div>
+                    <div class="kpi-title">Total Cases</div>
+                    <div class="kpi-value" data-value="{{ data.kpi.total_cases }}">0</div>
+                </div>
+            </div>
+            <div class="col-xl-2 col-lg-4 col-md-4 col-sm-6">
+                <div class="kpi-card">
+                    <div class="kpi-icon text-success"><i class="fa-solid fa-heart-pulse"></i></div>
+                    <div class="kpi-title">Total Recovered</div>
+                    <div class="kpi-value" data-value="{{ data.kpi.total_discharged }}">0</div>
+                </div>
+            </div>
+            <div class="col-xl-2 col-lg-4 col-md-4 col-sm-6">
+                <div class="kpi-card">
+                    <div class="kpi-icon text-danger"><i class="fa-solid fa-heart-crack"></i></div>
+                    <div class="kpi-title">Total Deaths</div>
+                    <div class="kpi-value" data-value="{{ data.kpi.total_deaths }}">0</div>
+                </div>
+            </div>
+            <div class="col-xl-2 col-lg-4 col-md-4 col-sm-6">
+                <div class="kpi-card">
+                    <div class="kpi-icon text-warning"><i class="fa-solid fa-person-running"></i></div>
+                    <div class="kpi-title">Active Cases</div>
+                    <div class="kpi-value" data-value="{{ data.kpi.active_cases }}">0</div>
+                </div>
+            </div>
+            <div class="col-xl-2 col-lg-4 col-md-4 col-sm-6">
+                <div class="kpi-card">
+                    <div class="kpi-icon text-info"><i class="fa-solid fa-syringe"></i></div>
+                    <div class="kpi-title">Vaccination Doses</div>
+                    <div class="kpi-value" data-value="{{ data.kpi.total_vaccination_doses }}">0</div>
+                </div>
+            </div>
+            <div class="col-xl-2 col-lg-4 col-md-4 col-sm-6">
+                <div class="kpi-card">
+                    <div class="kpi-icon 
+                        {% if data.kpi.overall_sentiment == 'Positive' %}text-success
+                        {% elif data.kpi.overall_sentiment == 'Negative' %}text-danger
+                        {% else %}text-warning{% endif %}">
+                        <i class="fa-solid 
+                            {% if data.kpi.overall_sentiment == 'Positive' %}fa-face-smile
+                            {% elif data.kpi.overall_sentiment == 'Negative' %}fa-face-frown
+                            {% else %}fa-face-meh{% endif %}"></i>
+                    </div>
+                    <div class="kpi-title">Overall Sentiment</div>
+                    <div class="kpi-value">{{ data.kpi.overall_sentiment }}</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Charts Section -->
+        <div class="row">
+            <div class="col-lg-8">
+                <div class="chart-card">
+                    <h5 class="card-title"><i class="fa-solid fa-chart-line"></i> Trends Over Time</h5>
+                    <canvas id="trendsOverTimeChart"></canvas>
+                </div>
+            </div>
+            <div class="col-lg-4">
+                 <div class="chart-card">
+                    <h5 class="card-title"><i class="fa-solid fa-chart-bar"></i> Top 10 States by Cases</h5>
+                    <canvas id="topStatesBarChart"></canvas>
+                </div>
+            </div>
+        </div>
+
+        <div class="row mt-3">
+            <div class="col-lg-4">
+                <div class="chart-card">
+                    <h5 class="card-title"><i class="fa-solid fa-pie-chart"></i> Case Proportions (Top 5 States)</h5>
+                    <canvas id="topStatesPieChart"></canvas>
+                </div>
+            </div>
+            <div class="col-lg-4">
+                <div class="chart-card">
+                    <h5 class="card-title"><i class="fa-solid fa-comments"></i> Sentiment Distribution</h5>
+                     <canvas id="sentimentDistributionChart"></canvas>
+                </div>
+            </div>
+            <div class="col-lg-4">
+                <div class="chart-card">
+                    <h5 class="card-title"><i class="fa-solid fa-fire"></i> Correlation Heatmap</h5>
+                    <p class="card-subtitle mb-2">Shows correlation between different metrics.</p>
+                    <img src="{{ url_for('static', filename=data.image_paths.correlationHeatmap) }}" class="img-fluid rounded" alt="Correlation Heatmap">
+                </div>
+            </div>
+        </div>
+
+        <!-- Forecasting Section -->
+        <div class="row mt-3 g-3">
+            <div class="col-lg-6">
+                <div class="chart-card">
+                    <h5 class="card-title"><i class="fa-solid fa-wand-magic-sparkles"></i> ARIMA Forecast</h5>
+                    <p class="card-subtitle mb-2">Forecast of total cases for the next 30 days using ARIMA model.</p>
+                    <img src="{{ url_for('static', filename=data.image_paths.arimaForecast) }}" class="img-fluid rounded" alt="ARIMA Forecast">
+                </div>
+            </div>
+            <div class="col-lg-6">
+                <div class="chart-card">
+                    <h5 class="card-title"><i class="fa-solid fa-chart-line"></i> Prophet Forecast</h5>
+                    <p class="card-subtitle mb-2">Forecast of total cases for the next 30 days using Prophet model.</p>
+                    <img src="{{ url_for('static', filename=data.image_paths.prophetForecast) }}" class="img-fluid rounded" alt="Prophet Forecast">
+                </div>
+            </div>
+        </div>
+
+        <!-- Footer -->
+        <footer class="text-center mt-4 mb-4">
+            <p class="text-muted">Data Source: Ministry of Health and Family Welfare, Government of India.
+                <br>
+                &copy; 2024 Covid-19 Dashboard. All rights reserved.
+                <br><a href="{{ url_for('update_data') }}" class="small text-decoration-none text-muted">Admin: Update Data</a>
+            </p>
+        </footer>
+    </div>
+
+    <!-- Bootstrap JS Bundle -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+    <!-- Chart.js -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script>
+        // Data from Flask server
+        const chartData = {{ data.charts | tojson }};
+
+        // 1. Trends Over Time Chart
+        new Chart(document.getElementById('trendsOverTimeChart'), {
+            type: 'line',
+            data: chartData.trendsOverTime,
+            options: { responsive: true, maintainAspectRatio: false }
+        });
+
+        // 2. Top States Bar Chart
+        new Chart(document.getElementById('topStatesBarChart'), {
+            type: 'bar',
+            data: chartData.topStatesBar,
+            options: { responsive: true, maintainAspectRatio: false, indexAxis: 'y' }
+        });
+
+        // 3. Top States Pie Chart
+        new Chart(document.getElementById('topStatesPieChart'), {
+            type: 'pie',
+            data: chartData.topStatesPie,
+            options: { responsive: true, maintainAspectRatio: false }
+        });
+        
+        // 4. Sentiment Distribution Chart
+        new Chart(document.getElementById('sentimentDistributionChart'), {
+            type: 'doughnut',
+            data: chartData.sentimentDistribution,
+            options: { responsive: true, maintainAspectRatio: false }
+        });
+
+        // --- IMPROVEMENTS SCRIPT ---
+
+        // Animate numbers on KPI cards
+        function animateValue(obj, start, end, duration) {
+            let startTimestamp = null;
+            const step = (timestamp) => {
+                if (!startTimestamp) startTimestamp = timestamp;
+                const progress = Math.min((timestamp - startTimestamp) / duration, 1);
+                const currentVal = Math.floor(progress * (end - start) + start);
+                // Format number with commas
+                obj.innerHTML = currentVal.toLocaleString('en-US');
+                if (progress < 1) {
+                    window.requestAnimationFrame(step);
+                }
+            };
+            window.requestAnimationFrame(step);
+        }
+
+        document.addEventListener("DOMContentLoaded", () => {
+            // Animate KPI values
+            const kpiElements = document.querySelectorAll('.kpi-value[data-value]');
+            kpiElements.forEach(el => {
+                const endValue = parseInt(el.getAttribute('data-value'));
+                if (!isNaN(endValue)) {
+                    animateValue(el, 0, endValue, 1500);
+                }
+            });
+        });
+
+    </script>
+</body>
+</html>
