@@ -55,9 +55,9 @@ meaningful information about the pandemic.
 4. **Download the Datasets**
    Due to GitHub's file size limits, the large datasets are not included in this repository. Please download them from their original sources on Kaggle:
 
-   *   **Sentiment Data:** [PASTE ORIGINAL KAGGLE LINK HERE] (Rename downloaded file to `COVID-19_Sentiments.csv`)
-   *   **Main Analysis Data:** [PASTE ORIGINAL KAGGLE LINK HERE] (Rename downloaded file to `output.csv`)
-   *   **Vaccination Data:** [PASTE ORIGINAL KAGGLE LINK HERE] (Rename downloaded file to `IndiaCovidVaccination2023.csv`)
+   *   **Sentiment Data:** (https://www.kaggle.com/datasets/abhaydhiman/covid19-sentiments) (Rename downloaded file to `COVID-19_Sentiments.csv`)
+   *   **Main Analysis Data:** (https://www.kaggle.com/datasets/akcoguz/outputcsb) (Rename downloaded file to `output.csv`)
+   *   **Vaccination Data:** https://www.kaggle.com/datasets/joebeachcapital/india-covid-vaccination-by-state-2023(Rename downloaded file to `IndiaCovidVaccination2023.csv`)
 
    **Action:** Place these CSV files inside the `data/` folder of this project.
 
