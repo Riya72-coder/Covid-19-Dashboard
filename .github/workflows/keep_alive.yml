@@ -1,0 +1,14 @@
+name: Keep Render Alive
+
+on:
+  schedule:
+    - cron: '*/14 * * * *' 
+  workflow_dispatch:
+
+jobs:
+  ping_render:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Send Request to Render
+        
+        run: curl -I https://covid-19-dashboard-12f8.onrender.com
